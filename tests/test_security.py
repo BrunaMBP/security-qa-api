@@ -67,3 +67,27 @@ def test_senha_nao_fica_em_texto_puro(client):
     conn.close()
     assert row[0] != "admin123"
     assert row[0].startswith(("scrypt:", "pbkdf2:"))
+
+
+# ---------- Cabeçalhos de segurança ----------
+
+CABECALHOS_ESPERADOS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Cache-Control": "no-store",
+}
+
+
+@pytest.mark.parametrize("rota", ["/login", "/login-inseguro"])
+def test_cabecalhos_de_seguranca_presentes(client, rota):
+    resposta = post(client, rota, "admin", "admin123")
+    for nome, valor in CABECALHOS_ESPERADOS.items():
+        assert resposta.headers.get(nome) == valor
+    assert "default-src 'none'" in resposta.headers.get("Content-Security-Policy", "")
+
+
+def test_cabecalhos_presentes_tambem_em_resposta_de_erro(client):
+    resposta = post(client, "/login", "admin", "errada")
+    assert resposta.status_code == 401
+    assert resposta.headers.get("X-Content-Type-Options") == "nosniff"    

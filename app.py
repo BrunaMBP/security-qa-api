@@ -5,6 +5,15 @@ from database import get_connection, init_db
 
 app = Flask(__name__)
 
+@app.after_request
+def adicionar_cabecalhos_de_seguranca(resposta):
+    resposta.headers["X-Content-Type-Options"] = "nosniff"
+    resposta.headers["X-Frame-Options"] = "DENY"
+    resposta.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    resposta.headers["Referrer-Policy"] = "no-referrer"
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
 
 @app.route("/login-inseguro", methods=["POST"])
 def login_inseguro():
