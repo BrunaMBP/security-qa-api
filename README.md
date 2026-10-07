@@ -9,7 +9,9 @@ Projeto de estudo de **Security QA**: uma API Flask com duas versões do mesmo l
 | Rota | Implementação | Resultado com `admin' --` |
 |------|---------------|---------------------------|
 | `/login-inseguro` | Query SQL montada por concatenação de strings | `200` (ataque funciona) |
-| `/login` | Query parametrizada | `401` (ataque barrado) |
+| `/login` | Query parametrizada e senha verificada por hash | `401` (ataque barrado) |
+
+A rota segura guarda senhas com hash (`werkzeug.security`). A tabela `users_inseguro`, em texto puro, existe só para o laboratório de SQL Injection.
 
 ## Tecnologias
 
@@ -40,11 +42,10 @@ curl -i -X POST http://127.0.0.1:5000/login-inseguro \
 pytest -v
 ```
 
-Os testes cobrem login válido, senha errada, payloads de SQL Injection nas duas rotas, aspas simples sem erro 500 e validação de campos vazios. Eles usam um banco temporário, então não alteram o `users.db`.
+Os testes cobrem login válido, senha errada, payloads de SQL Injection nas duas rotas, aspas simples sem erro 500, validação de campos vazios e armazenamento de senha com hash. Eles usam um banco temporário, então não alteram o `users.db`.
 
 ## Limitações conhecidas (próximos passos)
 
-- Senhas armazenadas em texto puro (trocar por hash, por exemplo bcrypt)
 - Sem limite de tentativas de login (testar força bruta)
 - Sem cabeçalhos de segurança HTTP
 - Sem autenticação por token
