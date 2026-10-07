@@ -57,3 +57,13 @@ def test_aspas_simples_nao_gera_erro_500_na_rota_segura(client):
 
 def test_campos_vazios_na_rota_segura(client):
     assert post(client, "/login", "", "").status_code == 400
+
+
+def test_senha_nao_fica_em_texto_puro(client):
+    conn = database.get_connection()
+    row = conn.execute(
+        "SELECT password_hash FROM users WHERE username = ?", ("admin",)
+    ).fetchone()
+    conn.close()
+    assert row[0] != "admin123"
+    assert row[0].startswith(("scrypt:", "pbkdf2:"))

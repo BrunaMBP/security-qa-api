@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+from werkzeug.security import check_password_hash
+
 from database import get_connection, init_db
 
 app = Flask(__name__)
@@ -13,7 +15,7 @@ def login_inseguro():
     password = data.get("password", "")
 
     query = (
-        "SELECT * FROM users WHERE username = '" + username +
+        "SELECT * FROM users_inseguro WHERE username = '" + username +
         "' AND password = '" + password + "'"
     )
     conn = get_connection()
@@ -31,7 +33,7 @@ def login_inseguro():
 
 @app.route("/login", methods=["POST"])
 def login():
-    # SEGURO: query parametrizada.
+    # SEGURO: query parametrizada + senha verificada por hash.
     data = request.get_json(silent=True) or {}
     username = data.get("username", "")
     password = data.get("password", "")
@@ -41,12 +43,12 @@ def login():
 
     conn = get_connection()
     user = conn.execute(
-        "SELECT * FROM users WHERE username = ? AND password = ?",
-        (username, password),
+        "SELECT password_hash FROM users WHERE username = ?",
+        (username,),
     ).fetchone()
     conn.close()
 
-    if user:
+    if user and check_password_hash(user[0], password):
         return jsonify({"mensagem": "login ok"}), 200
     return jsonify({"erro": "credenciais inválidas"}), 401
 
