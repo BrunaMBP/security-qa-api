@@ -1,4 +1,4 @@
-# Security QA API
+# Security QA API - em andamento.
 
 Projeto de estudo de **Security QA**: uma API Flask com duas versões do mesmo login, uma **propositalmente vulnerável** a SQL Injection e outra segura, com testes automatizados que provam a diferença entre as duas.
 
