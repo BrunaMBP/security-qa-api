@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta, timezone
+
+import jwt
 import pytest
 
 import database
@@ -91,3 +94,59 @@ def test_cabecalhos_presentes_tambem_em_resposta_de_erro(client):
     resposta = post(client, "/login", "admin", "errada")
     assert resposta.status_code == 401
     assert resposta.headers.get("X-Content-Type-Options") == "nosniff"    
+
+# ---------- Autenticação por token (JWT) ----------
+
+def obter_token(client):
+    return post(client, "/login", "admin", "admin123").get_json()["access_token"]
+
+
+def test_perfil_sem_token_retorna_401(client):
+    assert client.get("/perfil").status_code == 401
+
+
+def test_perfil_com_token_valido(client):
+    token = obter_token(client)
+    resposta = client.get("/perfil", headers={"Authorization": f"Bearer {token}"})
+    assert resposta.status_code == 200
+    assert resposta.get_json()["username"] == "admin"
+
+
+def test_perfil_com_token_adulterado(client):
+    cabecalho, payload, _ = obter_token(client).split(".")
+    falso = f"{cabecalho}.{payload}.assinaturafalsa"
+    resposta = client.get("/perfil", headers={"Authorization": f"Bearer {falso}"})
+    assert resposta.status_code == 401
+
+
+def test_perfil_com_token_expirado(client):
+    agora = datetime.now(timezone.utc)
+    token = jwt.encode(
+        {"sub": "admin", "iat": agora - timedelta(hours=2), "exp": agora - timedelta(hours=1)},
+        app.config["JWT_SECRET_KEY"],
+        algorithm="HS256",
+    )
+    resposta = client.get("/perfil", headers={"Authorization": f"Bearer {token}"})
+    assert resposta.status_code == 401
+
+
+def test_perfil_com_token_assinado_por_outra_chave(client):
+    agora = datetime.now(timezone.utc)
+    token = jwt.encode(
+        {"sub": "admin", "exp": agora + timedelta(minutes=5)},
+        "outra-chave-diferente-com-mais-de-trinta-e-dois-bytes",
+        algorithm="HS256",
+    )
+    resposta = client.get("/perfil", headers={"Authorization": f"Bearer {token}"})
+    assert resposta.status_code == 401
+
+
+def test_perfil_rejeita_token_com_algoritmo_none(client):
+    agora = datetime.now(timezone.utc)
+    token = jwt.encode(
+        {"sub": "admin", "exp": agora + timedelta(minutes=5)},
+        key=None,
+        algorithm="none",
+    )
+    resposta = client.get("/perfil", headers={"Authorization": f"Bearer {token}"})
+    assert resposta.status_code == 401
