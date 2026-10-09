@@ -1,5 +1,7 @@
 # Security QA API (em andamento)
 
+![Testes](https://github.com/BrunaMBP/security-qa-api/actions/workflows/tests.yml/badge.svg)
+
 Projeto de estudo de **Security QA**: uma API Flask com duas versões do mesmo login, uma **propositalmente vulnerável** a SQL Injection e outra segura, com testes automatizados que provam a diferença entre as duas.
 
 > **Aviso:** a rota `/login-inseguro` é vulnerável de propósito, para fins educacionais. Rode apenas localmente (o servidor já escuta só em `127.0.0.1`) e nunca publique essa API na internet.
