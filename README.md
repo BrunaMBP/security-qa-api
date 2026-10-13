@@ -37,6 +37,15 @@ python app.py
 
 A API sobe em `http://127.0.0.1:5000`.
 
+## Rodar com Docker
+
+```bash
+docker build -t security-qa-api .
+docker run --rm -p 127.0.0.1:5000:5000 security-qa-api
+```
+
+> Publique a porta sempre em `127.0.0.1`: a rota `/login-inseguro` é vulnerável de propósito e não deve ficar acessível pela rede.
+
 ## Exemplo de ataque
 
 ```bash
