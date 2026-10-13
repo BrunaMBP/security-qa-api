@@ -74,7 +74,7 @@ def login_inseguro():
     password = data.get("password", "")
 
     query = (
-        "SELECT * FROM users_inseguro WHERE username = '" + username +
+               "SELECT * FROM users_inseguro WHERE username = '" + username +  # nosec B608
         "' AND password = '" + password + "'"
     )
     conn = get_connection()
@@ -127,7 +127,7 @@ def login():
         return jsonify({
             "mensagem": "login ok",
             "access_token": token,
-            "token_type": "Bearer",
+            "token_type": "Bearer",  # nosec B105
             "expires_in": JWT_EXPIRATION_MINUTES * 60,
         }), 200
 

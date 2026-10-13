@@ -23,3 +23,24 @@ jobs:
 
       - name: Rodar os testes
         run: pytest -v
+
+  seguranca:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar ferramentas
+        run: pip install bandit pip-audit
+
+      - name: Análise estática (Bandit)
+        run: bandit -r app.py database.py
+
+      - name: Vulnerabilidades em dependências (pip-audit)
+        run: pip-audit -r requirements.txt
