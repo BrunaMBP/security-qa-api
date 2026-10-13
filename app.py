@@ -146,4 +146,5 @@ def perfil():
 
 if __name__ == "__main__":
     init_db()
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    host = os.environ.get("HOST", "127.0.0.1")
+    app.run(host=host, port=5000, debug=False)
