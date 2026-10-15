@@ -71,3 +71,24 @@ jobs:
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
+
+    docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Construir a imagem
+        run: docker build -t security-qa-api .
+
+      - name: Subir o container
+        run: docker run -d --name sqa -p 127.0.0.1:5000:5000 security-qa-api
+
+      - name: Testar o login no container
+        run: |
+          sleep 3
+          curl -sf -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}'
+
+      - name: Mostrar logs do container (se falhar)
+        if: failure()
+        run: docker logs sqa        
