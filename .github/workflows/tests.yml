@@ -72,7 +72,7 @@ jobs:
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
 
-    docker:
+  docker:
     runs-on: ubuntu-latest
     steps:
       - name: Baixar o código
@@ -86,8 +86,12 @@ jobs:
 
       - name: Testar o login no container
         run: |
-          sleep 3
-          curl -sf -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}'
+          for i in $(seq 1 15); do
+            curl -sf -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' && exit 0
+            sleep 2
+          done
+          echo "API não respondeu a tempo"
+          exit 1
 
       - name: Mostrar logs do container (se falhar)
         if: failure()
