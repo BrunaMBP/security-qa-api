@@ -1,30 +1,38 @@
 import pytest
-import requests
+from app import app
+import database
 
-BASE_URL = "http://127.0.0.1:5000"
+
+@pytest.fixture
+def client():
+    # Configura o banco e a app para modo de teste
+    database.init_db()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        yield client
 
 
-def test_bloqueio_rota_protegida_sem_token():
+def test_bloqueio_rota_protegida_sem_token(client):
     """Garante que a rota /perfil rejeita acessos sem token JWT"""
-    response = requests.get(f"{BASE_URL}/perfil")
+    response = client.get("/perfil")
     assert response.status_code == 401
-    assert response.json()["erro"] == "token de autenticação ausente"
+    assert response.json["erro"] == "token de autenticação ausente"
 
 
-def test_fluxo_autenticacao_jwt_sucesso():
+def test_fluxo_autenticacao_jwt_sucesso(client):
     """Testa o fluxo completo: login, captura do token e acesso ao /perfil"""
     # 1. Login com credenciais válidas
     payload = {"username": "admin", "password": "admin123"}
-    response_login = requests.post(f"{BASE_URL}/login", json=payload)
+    response_login = client.post("/login", json=payload)
 
     assert response_login.status_code == 200
-    assert "access_token" in response_login.json()
+    assert "access_token" in response_login.json
 
-    token = response_login.json()["access_token"]
+    token = response_login.json["access_token"]
 
     # 2. Requisição para a rota protegida com o token JWT
     headers = {"Authorization": f"Bearer {token}"}
-    response_perfil = requests.get(f"{BASE_URL}/perfil", headers=headers)
+    response_perfil = client.get("/perfil", headers=headers)
 
     assert response_perfil.status_code == 200
-    assert response_perfil.json()["username"] == "admin"
+    assert response_perfil.json["username"] == "admin"
