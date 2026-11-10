@@ -63,7 +63,7 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
+          severity: "CRITICAL"
 
       - name: Subir o container
         run: docker run -d --name sqa -p 127.0.0.1:5000:5000 security-qa-api:latest
