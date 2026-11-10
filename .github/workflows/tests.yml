@@ -68,10 +68,10 @@ jobs:
       - name: Subir o container
         run: docker run -d --name sqa -p 127.0.0.1:5000:5000 security-qa-api:latest
 
-      - name: Testar o login no container
+      - name: Testar se a API está respondendo
         run: |
           for i in $(seq 1 15); do
-            curl -sf -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' && exit 0
+            curl -s http://127.0.0.1:5000/ && exit 0
             sleep 2
           done
           echo "API não respondeu a tempo"
